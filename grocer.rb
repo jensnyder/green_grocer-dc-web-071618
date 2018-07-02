@@ -18,20 +18,28 @@ def consolidate_cart(cart)
 end
 
 def apply_coupons(cart, coupons)
-  coupons.each do |coupon|
-    name = coupon[:item]
-    if cart[name] && cart[name][:count] >= coupon[:num]
-      if cart["#{name} W/COUPON"]
-        cart["#{name} W/COUPON"][:count] += 1
+  if coupons.length == 0
+    return cart
+  end
+  new_cart ={}
+  cart.each do |item, cost_hash|
+    coupons.each do |coupon|
+      if item == coupon[:item]
+        new_count = 0
+        while cost_hash[:count] >= coupon[:num]
+          new_cart["#{item} W/COUPON"] = {:price => coupon[:cost], :clearance => cost_hash[:clearance], :count => new_count += 1}
+          cost_hash[:count] -= coupon[:num]
+          new_cart[item] = cost_hash
+        end
       else
-        cart["#{name} W/COUPON"] = {:count => 1, :price => coupon[:cost]}
-        cart["#{name} W/COUPON"][:clearance] = cart[name][:clearance]
+        new_cart[item] = cost_hash
       end
-      cart[name][:count] -= coupon[:num]
     end
   end
-  cart
+  new_cart
 end
+
+
 
 cart = {"CHEESE" => {:price => 6.50, :clearance => false, :count => 5}, "AVOCADO" => {:price => 3.0, :clearance => true, :count => 5}}
 coupons =[{:item => "CHEESE", :num => 3, :cost => 15.00}, {:item => "AVOCADO", :num => 2, :cost => 5.00}]
